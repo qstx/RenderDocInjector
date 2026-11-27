@@ -10,13 +10,13 @@ Renderdoc.dll injector based on SeanPesce/d3d11-wrapper
 
 | 路径 | 用在哪 | 示例（不是你机器上的） |
 |---|---|---|
-| **RenderDoc 安装目录** | 从中取 `renderdoc.dll`（位数要和目标进程一致，版本要和 qrenderdoc.exe 一致）；`vulkan\tools\gen_manifest.py` 顶部也写死了这个路径 | `D:\Env\RenderDoc\` |
+| **RenderDoc 安装目录** | 从中取 `renderdoc.dll`（位数要和目标进程一致，版本要和 `qrenderdoc.exe` 一致）；Vulkan 方案的默认路径在 `vulkan\tools\gen_manifest.py` 中配置 | `C:\Program Files\RenderDoc\` |
 | **MuMu 设备目录** | 拷贝 `d3d11.dll` / `renderdoc.dll` 的目标目录 | `C:\Program Files\Netease\MuMuPlayer-12.0\device` |
 
 注意不同 MuMu 版本的目录结构可能不同（例如 MuMu 12 的渲染器目录是
 `%ProgramFiles%\MuMuVMMVbox\Hypervisor`），以你自己的实际安装位置为准。
 
-> Vulkan 渲染模式下的截帧方案见 [`vulkan/`](vulkan/README.md)。
+> Vulkan 渲染模式下的截帧方案见 [`vulkan/`](vulkan/README.md)。注册和撤销都需要管理员权限；抓帧后请撤销，恢复官方层注册。
 
 ## Build
 

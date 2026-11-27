@@ -3,11 +3,17 @@
 
 RenderDoc registers its Vulkan layer as an implicit layer, but gates it behind
 ENABLE_VULKAN_RENDERDOC_CAPTURE=1 (renderdoc.json -> enable_environment).
-MuMu's renderer (MuMuVMMHeadless.exe) is launched from a service context, so no
-environment variable set in the user session reaches it -- and the loader
-refuses to be hijacked via a DLL proxy.  Dropping the gate from a *copy* of the
-manifest and registering that copy as a per-user implicit layer (HKCU) makes the
-layer load with no environment variable at all.
+MuMu's renderer (MuMuVMMHeadless.exe / MuMuNxHeadless.exe) is launched from a
+service context, so no environment variable set in the user session reaches it
+-- and the loader refuses to be hijacked via a DLL proxy.  Dropping the gate
+from a *copy* of the manifest and registering that copy as a machine-wide
+implicit layer (HKLM, see deploy/register-layer.bat) makes the layer load with
+no environment variable at all.
+
+The copy has a distinct layer name. The registration script disables the
+official 64-bit registration while the copy is active: loading the same DLL as
+two distinct layers can crash when enumerating Vulkan devices. HKLM registration
+is needed because the elevated MuMu renderer's loader ignores HKCU layers.
 
     python tools/gen_manifest.py
 """
@@ -15,8 +21,9 @@ import json
 import sys
 from pathlib import Path
 
-RENDERDOC_JSON = Path(r"D:\Env\RenderDoc\renderdoc.json")
-RENDERDOC_DLL = Path(r"D:\Env\RenderDoc\renderdoc.dll")
+RENDERDOC_JSON = Path(r"C:\Program Files\RenderDoc\renderdoc.json")
+RENDERDOC_DLL = Path(r"C:\Program Files\RenderDoc\renderdoc.dll")
+LAYER_NAME = "VK_LAYER_RENDERDOC_Capture_Ungated"
 OUT = Path(__file__).resolve().parent.parent / "deploy" / "renderdoc-layer-ungated.json"
 
 
@@ -29,6 +36,7 @@ def main() -> int:
     doc = json.loads(RENDERDOC_JSON.read_text(encoding="utf-8"))
     layer = doc["layer"]
     layer.pop("enable_environment", None)
+    layer["name"] = LAYER_NAME
     # absolute path: this manifest lives outside the RenderDoc install dir
     layer["library_path"] = str(RENDERDOC_DLL)
     layer["description"] = ("RenderDoc capture layer -- ungated copy, always on "
